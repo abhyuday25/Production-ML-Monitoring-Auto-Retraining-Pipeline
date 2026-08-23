@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+
+# Local runtime state
+predictions.db
+mlflow.db
+mlruns/
+artifacts/
+models/
+runtime/
+mlflow/
+
+# Generated datasets
+data/raw/
+data/processed/
+data/reference/
+data/production/
