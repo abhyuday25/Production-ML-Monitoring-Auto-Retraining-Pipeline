@@ -33,6 +33,29 @@ class Settings:
     drift_critical_threshold: float = 0.85
     top_drift_features: int = 5
     random_seed: int = 42
+    periodic_retrain_interval: int = 500
+    error_window_size: int = 200
+    error_retrain_threshold: float = 0.15
+    min_error_samples: int = 100
+    drift_retrain_score_threshold: float = 0.70
+    drift_retrain_min_severity: str = "HIGH"
+    retrain_cooldown_observations: int = 300
+    expected_future_requests: int = 1000
+    business_error_cost_weight: float = 1.0
+    fixed_retrain_cost: float = 20.0
+    retrain_cost_per_1000_samples: float = 2.0
+    deployment_cost_penalty: float = 5.0
+    min_retrain_net_benefit: float = 0.0
+    min_retrain_samples: int = 200
+    max_production_retrain_samples: int = 5000
+    primary_model_metric: str = "f1"
+    min_candidate_metric: float = 0.70
+    max_allowed_holdout_drop: float = 0.03
+    min_champion_improvement: float = 0.0
+    canary_percentage: float = 20.0
+    min_shadow_labeled_samples: int = 100
+    post_promotion_eval_samples: int = 100
+    rollback_metric_drop: float = 0.03
 
 
 def _bool_from_env(value: str | None, default: bool = False) -> bool:
@@ -72,4 +95,27 @@ def get_settings() -> Settings:
         drift_critical_threshold=float(os.getenv("DRIFT_CRITICAL_THRESHOLD", "0.85")),
         top_drift_features=int(os.getenv("TOP_DRIFT_FEATURES", "5")),
         random_seed=int(os.getenv("RANDOM_SEED", "42")),
+        periodic_retrain_interval=int(os.getenv("PERIODIC_RETRAIN_INTERVAL", "500")),
+        error_window_size=int(os.getenv("ERROR_WINDOW_SIZE", "200")),
+        error_retrain_threshold=float(os.getenv("ERROR_RETRAIN_THRESHOLD", "0.15")),
+        min_error_samples=int(os.getenv("MIN_ERROR_SAMPLES", "100")),
+        drift_retrain_score_threshold=float(os.getenv("DRIFT_RETRAIN_SCORE_THRESHOLD", "0.70")),
+        drift_retrain_min_severity=os.getenv("DRIFT_RETRAIN_MIN_SEVERITY", "HIGH"),
+        retrain_cooldown_observations=int(os.getenv("RETRAIN_COOLDOWN_OBSERVATIONS", "300")),
+        expected_future_requests=int(os.getenv("EXPECTED_FUTURE_REQUESTS", "1000")),
+        business_error_cost_weight=float(os.getenv("BUSINESS_ERROR_COST_WEIGHT", "1.0")),
+        fixed_retrain_cost=float(os.getenv("FIXED_RETRAIN_COST", "20.0")),
+        retrain_cost_per_1000_samples=float(os.getenv("RETRAIN_COST_PER_1000_SAMPLES", "2.0")),
+        deployment_cost_penalty=float(os.getenv("DEPLOYMENT_COST_PENALTY", "5.0")),
+        min_retrain_net_benefit=float(os.getenv("MIN_RETRAIN_NET_BENEFIT", "0.0")),
+        min_retrain_samples=int(os.getenv("MIN_RETRAIN_SAMPLES", "200")),
+        max_production_retrain_samples=int(os.getenv("MAX_PRODUCTION_RETRAIN_SAMPLES", "5000")),
+        primary_model_metric=os.getenv("PRIMARY_MODEL_METRIC", "f1"),
+        min_candidate_metric=float(os.getenv("MIN_CANDIDATE_METRIC", "0.70")),
+        max_allowed_holdout_drop=float(os.getenv("MAX_ALLOWED_HOLDOUT_DROP", "0.03")),
+        min_champion_improvement=float(os.getenv("MIN_CHAMPION_IMPROVEMENT", "0.0")),
+        canary_percentage=float(os.getenv("CANARY_PERCENTAGE", "20.0")),
+        min_shadow_labeled_samples=int(os.getenv("MIN_SHADOW_LABELED_SAMPLES", "100")),
+        post_promotion_eval_samples=int(os.getenv("POST_PROMOTION_EVAL_SAMPLES", "100")),
+        rollback_metric_drop=float(os.getenv("ROLLBACK_METRIC_DROP", "0.03")),
     )

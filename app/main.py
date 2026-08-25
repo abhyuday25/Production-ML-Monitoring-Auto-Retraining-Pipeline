@@ -3,6 +3,8 @@ from contextlib import asynccontextmanager
 import logging
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router
 from app.core.config import Settings, get_settings
@@ -21,6 +23,8 @@ def create_app(settings: Settings | None = None, model_bundle: ModelBundle | Non
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         session_factory = configure_database(settings.database_url)
+        app.state.settings = settings
+        app.state.session_factory = session_factory
         create_tables()
         bundle = model_bundle
         if bundle is None and not settings.skip_model_load:
@@ -35,8 +39,14 @@ def create_app(settings: Settings | None = None, model_bundle: ModelBundle | Non
 
     app = FastAPI(title="Production ML Monitoring API", version="0.1.0", lifespan=lifespan)
     app.include_router(router)
+    static_dir = "app/static"
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+    @app.get("/", include_in_schema=False)
+    def frontend() -> FileResponse:
+        return FileResponse(f"{static_dir}/index.html")
+
     return app
 
 
 app = create_app()
-

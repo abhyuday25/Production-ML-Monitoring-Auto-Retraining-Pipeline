@@ -1,0 +1,2 @@
+"""Prometheus observability integration."""
+

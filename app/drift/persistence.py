@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.db.models import DriftAlert, DriftMeasurement
 from app.drift.schemas import DriftAssessment, DriftResult
+from app.observability.metrics import record_drift_results
 
 
 def persist_drift_results(session: Session, results: list[DriftResult], assessment: DriftAssessment) -> DriftAlert:
@@ -38,4 +39,5 @@ def persist_drift_results(session: Session, results: list[DriftResult], assessme
     session.add(alert)
     session.commit()
     session.refresh(alert)
+    record_drift_results(results, assessment)
     return alert

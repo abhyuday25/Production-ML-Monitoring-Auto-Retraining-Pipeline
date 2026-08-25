@@ -10,6 +10,7 @@ import pandas as pd
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db.models import PredictionLog
+from app.observability.metrics import record_prediction, record_prediction_error
 from app.schemas.prediction import PredictionRequest, PredictionResponse
 
 logger = logging.getLogger(__name__)
@@ -48,10 +49,12 @@ class PredictionService:
             probability = self._predict_probability(input_frame, prediction)
             latency_ms = (perf_counter() - started) * 1000
             self._log_prediction(request_id, payload, prediction, probability, latency_ms)
+            record_prediction(self.model_bundle.model_version, prediction, latency_ms / 1000.0)
         except ValidationError:
             raise
         except Exception as exc:
             logger.exception("Prediction failed")
+            record_prediction_error()
             raise PredictionServiceError("Prediction failed") from exc
 
         logger.info("Prediction succeeded request_id=%s", request_id)
@@ -105,4 +108,3 @@ class PredictionService:
                 )
             )
             session.commit()
-

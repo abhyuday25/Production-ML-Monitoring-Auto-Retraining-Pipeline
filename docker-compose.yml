@@ -17,25 +17,92 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
+  model-init:
     build: .
     depends_on:
       mlflow:
         condition: service_healthy
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_MODEL_NAME: production-monitoring-model
+      MLFLOW_MODEL_ALIAS: champion
+      DATA_DIR: /app/data
+      GIT_PYTHON_REFRESH: quiet
+    command: ["python", "scripts/ensure_model.py", "--data-dir", "/app/data"]
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./mlflow:/mlflow
+    restart: "no"
+
+  api:
+    build: .
+    depends_on:
+      model-init:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: sqlite:////app/runtime/predictions.db
       MLFLOW_TRACKING_URI: http://mlflow:5000
       MLFLOW_MODEL_NAME: production-monitoring-model
       MLFLOW_MODEL_ALIAS: champion
       DATA_DIR: /app/data
+      GIT_PYTHON_REFRESH: quiet
     ports:
       - "8000:8000"
     volumes:
       - ./data:/app/data
       - ./models:/app/models
       - ./runtime:/app/runtime
+      - ./mlflow:/mlflow
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:9090/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/etc/grafana/dashboards:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3000/api/health | grep -q ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  prometheus-data:
+  grafana-data:

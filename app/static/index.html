@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ML Monitoring Console</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Production ML</p>
+          <h1>Monitoring & Retraining Console</h1>
+        </div>
+        <div class="status-strip">
+          <span class="status-dot" id="health-dot"></span>
+          <span id="health-text">Checking API</span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="panel upload-panel">
+          <h2>Dataset Upload</h2>
+          <form id="upload-form">
+            <label class="dropzone" for="dataset-file">
+              <span class="drop-icon">CSV</span>
+              <span id="file-label">Choose dataset</span>
+              <input id="dataset-file" name="file" type="file" accept=".csv,text/csv" />
+            </label>
+            <button type="submit" id="upload-button">Train Model</button>
+          </form>
+          <div class="schema">
+            <span>Supported schemas</span>
+            <code>feature_0 ... feature_9, target</code>
+            <code>Time, V1 ... V28, Amount, Class</code>
+          </div>
+          <div class="job-card">
+            <div>
+              <span class="muted">Latest job</span>
+              <strong id="job-status">No upload yet</strong>
+            </div>
+            <p id="job-message">Upload a CSV to start a new training run.</p>
+          </div>
+        </aside>
+
+        <section class="main-grid">
+          <div class="metrics-row">
+            <article class="metric">
+              <span>Accuracy</span>
+              <strong id="metric-accuracy">--</strong>
+            </article>
+            <article class="metric">
+              <span>F1</span>
+              <strong id="metric-f1">--</strong>
+            </article>
+            <article class="metric">
+              <span>ROC AUC</span>
+              <strong id="metric-roc">--</strong>
+            </article>
+            <article class="metric">
+              <span>Model Version</span>
+              <strong id="metric-version">--</strong>
+            </article>
+          </div>
+
+          <section class="panel results-panel">
+            <div class="section-heading">
+              <h2>Training Result</h2>
+              <a href="http://localhost:5000" target="_blank" rel="noreferrer">MLflow</a>
+            </div>
+            <pre id="result-json">{}</pre>
+          </section>
+
+          <section class="panel grafana-panel">
+            <div class="section-heading">
+              <h2>Grafana</h2>
+              <a
+                href="http://localhost:3000/d/mlops-monitoring-auto-retraining/ml-monitoring-auto-retraining"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open Dashboard
+              </a>
+            </div>
+            <iframe
+              title="Grafana ML Monitoring Dashboard"
+              src="http://localhost:3000/d/mlops-monitoring-auto-retraining/ml-monitoring-auto-retraining?orgId=1&kiosk"
+            ></iframe>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

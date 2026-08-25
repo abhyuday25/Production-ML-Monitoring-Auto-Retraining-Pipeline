@@ -65,3 +65,71 @@ class DriftAlert(Base):
     top_drifting_features: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     window_size: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     metadata_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class RetrainingDecision(Base):
+    __tablename__ = "retraining_decisions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+    policy: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
+    policy_triggered: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    policy_reason: Mapped[str] = mapped_column(Text, nullable=False)
+    trigger_metrics: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    cost_approved: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    estimated_drift_cost: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    estimated_retraining_cost: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    net_benefit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    final_should_retrain: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    observation_index: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    metadata_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class RetrainingRun(Base):
+    __tablename__ = "retraining_runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    timestamp_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    timestamp_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
+    policy: Mapped[str] = mapped_column(String(64), nullable=False)
+    training_sample_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    candidate_run_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    candidate_model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    champion_model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    validation_result: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    promotion_result: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    failure_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    duration_seconds: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class DeploymentEvent(Base):
+    __tablename__ = "deployment_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    event_type: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
+    old_model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    new_model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    metrics: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+
+
+class ShadowPredictionLog(Base):
+    __tablename__ = "shadow_prediction_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    request_id: Mapped[str] = mapped_column(String(36), index=True, nullable=False)
+    champion_model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    candidate_model_version: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    champion_prediction: Mapped[int] = mapped_column(Integer, nullable=False)
+    candidate_prediction: Mapped[int] = mapped_column(Integer, nullable=False)
+    ground_truth: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    champion_probability: Mapped[float | None] = mapped_column(Float, nullable=True)
+    candidate_probability: Mapped[float | None] = mapped_column(Float, nullable=True)

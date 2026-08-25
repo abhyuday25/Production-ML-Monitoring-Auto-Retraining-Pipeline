@@ -9,13 +9,19 @@ venv/
 predictions.db
 mlflow.db
 mlruns/
-artifacts/
+artifacts/*
+!artifacts/results/
+!artifacts/results/.gitkeep
 models/
 runtime/
 mlflow/
+observability/grafana/data/
+observability/prometheus/data/
 
 # Generated datasets
 data/raw/
 data/processed/
 data/reference/
 data/production/
+data/uploads/
+data/training_jobs/
